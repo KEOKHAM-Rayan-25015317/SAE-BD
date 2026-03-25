@@ -1,0 +1,8 @@
+Script création de l’extension 
+On a hésité a prendre un faker car on avais entendu en classe mais finalement on avais pas envie d’en crée un nous meme avec python par soucis de faire du faute et par gain et temps et on a remarquer que sur la plus part des sites en lignes il y’avais une limite qui dcp correspondais mal avec notre objectif de millions de tuple 
+On a donc voulu utiliser une methode qui nous permet de rester dans le sql directement dans onecompiler et qui nous permet de tester si ca marche en direct en utilisant la methode du PL/SQL sauf que mettre 1 millions de donnée etais impossible y’avais une limite a chaque fois c’est pour ca qu’on a decider de passer a le methode CONNECT BY LEVEL car on avais remarquer sur une ancien SQL du prof qu’il l’utiliser
+finalement on s’est rendu compte que c’etais psq on utiliser onecompiler et apres on a ovulu utiliser oracle freesql mais c’est pas stable ca bug bcp et on voulais pas que ca marche 
+Pour le script on a utiliser google collab car on avais pas les droit et que c’etais plus simple a faire de chez nous c’etais une alternative et on a fais en sorte que au debut il efface les anciens table car quand on fesais des erreurs ca les garder et dcp ca nous permettais de nettoyer le cache et de continuer pour quelque soucis de optimisation on a fais en sorte que les numeros de telephone ne soit pas differents on procede a 50000 par 50000 pour pas saturer aussi 
+ca nous genere un .DB qu’on peut lire grace aux 2 extension direct sur vscode qui est sqlite et sqlview qui permait de nous generer un tableau comme oracle 
+On a ajouter le fais qu’il nous le renvoie en sql directement dans le google collab avec les 1 millions de insert into sauf que il ne reconnais plus
+ 
