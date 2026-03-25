@@ -1,121 +1,120 @@
-
-DROP TABLE compose CASCADE CONSTRAINTS;
-DROP TABLE constitue2 CASCADE CONSTRAINTS;
-DROP TABLE constitue CASCADE CONSTRAINTS;
-DROP TABLE est_composee CASCADE CONSTRAINTS;
-DROP TABLE participe CASCADE CONSTRAINTS;
-DROP TABLE REUNION CASCADE CONSTRAINTS;
-DROP TABLE CLUB CASCADE CONSTRAINTS;
-DROP TABLE ENTRETIEN CASCADE CONSTRAINTS;
-DROP TABLE MACHINE CASCADE CONSTRAINTS;
-DROP TABLE PLAT CASCADE CONSTRAINTS;
-DROP TABLE LIEU CASCADE CONSTRAINTS;
-DROP TABLE ORDRE CASCADE CONSTRAINTS;
-DROP TABLE TENRAC CASCADE CONSTRAINTS;
-DROP TABLE INGREDIENT CASCADE CONSTRAINTS;
-DROP TABLE MODELE CASCADE CONSTRAINTS;
-DROP TABLE SAUCE CASCADE CONSTRAINTS;
-DROP TABLE LEGUME CASCADE CONSTRAINTS;
-DROP TABLE ALIMENT CASCADE CONSTRAINTS;
-DROP TABLE TERRITOIRE CASCADE CONSTRAINTS;
-DROP TABLE ORGANISATION CASCADE CONSTRAINTS;
-DROP TABLE GRADE_SUIVANT CASCADE CONSTRAINTS;
-DROP TABLE GRADE CASCADE CONSTRAINTS;
-DROP TABLE DIGNITE CASCADE CONSTRAINTS;
-DROP TABLE TITRE CASCADE CONSTRAINTS;
-DROP TABLE RANG CASCADE CONSTRAINTS;
-DROP TABLE ORGANISME CASCADE CONSTRAINTS;
+DROP TABLE IF EXISTS compose;
+DROP TABLE IF EXISTS constitue2;
+DROP TABLE IF EXISTS constitue;
+DROP TABLE IF EXISTS est_composee;
+DROP TABLE IF EXISTS participe;
+DROP TABLE IF EXISTS REUNION;
+DROP TABLE IF EXISTS CLUB;
+DROP TABLE IF EXISTS ENTRETIEN;
+DROP TABLE IF EXISTS MACHINE;
+DROP TABLE IF EXISTS PLAT;
+DROP TABLE IF EXISTS LIEU;
+DROP TABLE IF EXISTS ORDRE;
+DROP TABLE IF EXISTS TENRAC;
+DROP TABLE IF EXISTS INGREDIENT;
+DROP TABLE IF EXISTS MODELE;
+DROP TABLE IF EXISTS SAUCE;
+DROP TABLE IF EXISTS LEGUME;
+DROP TABLE IF EXISTS ALIMENT;
+DROP TABLE IF EXISTS TERRITOIRE;
+DROP TABLE IF EXISTS ORGANISATION;
+DROP TABLE IF EXISTS GRADE_SUIVANT;
+DROP TABLE IF EXISTS GRADE;
+DROP TABLE IF EXISTS DIGNITE;
+DROP TABLE IF EXISTS TITRE;
+DROP TABLE IF EXISTS RANG;
+DROP TABLE IF EXISTS ORGANISME;
 
 CREATE TABLE ORGANISME(
-   siret NUMBER,
-   nomOrganisme VARCHAR2(100),
-   raisonSociale VARCHAR2(1000),
+   siret INT,
+   nomOrganisme VARCHAR(100),
+   raisonSociale TEXT,
    PRIMARY KEY(siret)
 );
 
 CREATE TABLE RANG(
-   nomRang VARCHAR2(50),
+   nomRang VARCHAR(50),
    PRIMARY KEY(nomRang),
    CONSTRAINT chk_rang CHECK (nomRang IN ('Novice', 'Compagnon'))
 );
 
 CREATE TABLE TITRE(
-   nomTitre VARCHAR2(50),
+   nomTitre VARCHAR(50),
    PRIMARY KEY(nomTitre),
    CONSTRAINT chk_titre CHECK (nomTitre IN ('Philanthrope', 'Protecteur', 'Honorable'))
 );
 
 CREATE TABLE DIGNITE(
-   nomDignite VARCHAR2(50),
+   nomDignite VARCHAR(50),
    PRIMARY KEY(nomDignite),
    CONSTRAINT chk_dignite CHECK (nomDignite IN ('Maître', 'Grand Chancelier', 'Grand Maître'))
 );
 
 CREATE TABLE GRADE(
-   nomGrade VARCHAR2(50),
+   nomGrade VARCHAR(50),
    PRIMARY KEY(nomGrade),
    CONSTRAINT chk_grade CHECK (nomGrade IN ('Affilié', 'Sympathisant', 'Adhérent', 'Chevalier / Dame', 'Grand Chevalier / Haute Dame', 'Commandeur', 'Grand''Croix'))
 );
 
 CREATE TABLE GRADE_SUIVANT(
-   nomGrade VARCHAR2(50),
-   nomGradSuiv VARCHAR2(50),
+   nomGrade VARCHAR(50),
+   nomGradSuiv VARCHAR(50),
    PRIMARY KEY(nomGrade, nomGradSuiv),
    UNIQUE(nomGrade),
    FOREIGN KEY(nomGrade) REFERENCES GRADE(nomGrade)
 );
 
 CREATE TABLE ORGANISATION(
-   numOrganisation NUMBER,
-   nomOrganisation VARCHAR2(100),
+   numOrganisation INT,
+   nomOrganisation VARCHAR(100),
    PRIMARY KEY(numOrganisation)
 );
 
 CREATE TABLE TERRITOIRE(
-   idTerritoire NUMBER,
-   nomTerritoire VARCHAR2(100),
+   idTerritoire INT,
+   nomTerritoire VARCHAR(100),
    PRIMARY KEY(idTerritoire)
 );
 
 CREATE TABLE ALIMENT(
-   nomA VARCHAR2(100),
+   nomA VARCHAR(100),
    PRIMARY KEY(nomA)
 );
 
 CREATE TABLE LEGUME(
-   nomLegume VARCHAR2(100),
+   nomLegume VARCHAR(100),
    PRIMARY KEY(nomLegume)
 );
 
 CREATE TABLE SAUCE(
-   nomSauce VARCHAR2(100),
+   nomSauce VARCHAR(100),
    PRIMARY KEY(nomSauce)
 );
 
 CREATE TABLE MODELE(
-   nomModele VARCHAR2(100),
-   typeEntretien VARCHAR2(100),
-   periodiciteEntretien VARCHAR2(1000),
+   nomModele VARCHAR(100),
+   typeEntretien VARCHAR(100),
+   periodiciteEntretien TEXT,
    PRIMARY KEY(nomModele)
 );
 
 CREATE TABLE INGREDIENT(
-   nomIngredient VARCHAR2(100),
+   nomIngredient VARCHAR(100),
    PRIMARY KEY(nomIngredient)
 );
 
 CREATE TABLE TENRAC(
-   codeTenrac NUMBER,
-   nomTenrac VARCHAR2(100),
-   courrielT VARCHAR2(150),
-   telT VARCHAR2(20),
-   adresseT VARCHAR2(255),
-   numOrganisation NUMBER NOT NULL,
-   nomGrade VARCHAR2(50) NOT NULL,
-   nomRang VARCHAR2(50),
-   nomTitre VARCHAR2(50),
-   nomDignite VARCHAR2(50),
-   siret NUMBER NOT NULL,
+   codeTenrac INT,
+   nomTenrac VARCHAR(100),
+   courrielT VARCHAR(150),
+   telT VARCHAR(20),
+   adresseT VARCHAR(255),
+   numOrganisation INT NOT NULL,
+   nomGrade VARCHAR(50) NOT NULL,
+   nomRang VARCHAR(50),
+   nomTitre VARCHAR(50),
+   nomDignite VARCHAR(50),
+   siret INT NOT NULL,
    PRIMARY KEY(codeTenrac),
    FOREIGN KEY(numOrganisation) REFERENCES ORGANISATION(numOrganisation),
    FOREIGN KEY(nomGrade) REFERENCES GRADE(nomGrade),
@@ -126,8 +125,8 @@ CREATE TABLE TENRAC(
 );
 
 CREATE TABLE ORDRE(
-   numOrganisation NUMBER,
-   idTerritoire NUMBER NOT NULL,
+   numOrganisation INT,
+   idTerritoire INT NOT NULL,
    PRIMARY KEY(numOrganisation),
    UNIQUE(idTerritoire),
    FOREIGN KEY(numOrganisation) REFERENCES ORGANISATION(numOrganisation),
@@ -135,33 +134,33 @@ CREATE TABLE ORDRE(
 );
 
 CREATE TABLE LIEU(
-   idLieu NUMBER,
-   adresseLieu VARCHAR2(255),
-   numOrganisation NUMBER NOT NULL,
+   idLieu INT,
+   adresseLieu VARCHAR(255),
+   numOrganisation INT NOT NULL,
    PRIMARY KEY(idLieu),
    FOREIGN KEY(numOrganisation) REFERENCES ORDRE(numOrganisation)
 );
 
 CREATE TABLE PLAT(
-   idPlat NUMBER,
-   nomLegume VARCHAR2(100),
+   idPlat INT,
+   nomLegume VARCHAR(100),
    PRIMARY KEY(idPlat),
    FOREIGN KEY(nomLegume) REFERENCES LEGUME(nomLegume)
 );
 
 CREATE TABLE MACHINE(
-   nomMachine VARCHAR2(100),
-   nomModele VARCHAR2(100) NOT NULL,
+   nomMachine VARCHAR(100),
+   nomModele VARCHAR(100) NOT NULL,
    PRIMARY KEY(nomMachine),
    FOREIGN KEY(nomModele) REFERENCES MODELE(nomModele)
 );
 
 CREATE TABLE ENTRETIEN(
-   idEntretien NUMBER,
+   idEntretien INT,
    date_ DATE,
-   nomMachine VARCHAR2(100) NOT NULL,
-   numOrganisation NUMBER NOT NULL,
-   codeTenrac NUMBER NOT NULL,
+   nomMachine VARCHAR(100) NOT NULL,
+   numOrganisation INT NOT NULL,
+   codeTenrac INT NOT NULL,
    PRIMARY KEY(idEntretien),
    FOREIGN KEY(nomMachine) REFERENCES MACHINE(nomMachine),
    FOREIGN KEY(numOrganisation) REFERENCES ORGANISATION(numOrganisation),
@@ -169,59 +168,59 @@ CREATE TABLE ENTRETIEN(
 );
 
 CREATE TABLE CLUB(
-   numOrganisation_1 NUMBER,
-   numOrganisation NUMBER,
+   numOrganisation_1 INT,
+   numOrganisation INT,
    PRIMARY KEY(numOrganisation_1),
    FOREIGN KEY(numOrganisation_1) REFERENCES ORGANISATION(numOrganisation),
    FOREIGN KEY(numOrganisation) REFERENCES ORDRE(numOrganisation)
 );
 
 CREATE TABLE REUNION(
-   idReunion NUMBER,
+   idReunion INT,
    dateReunion DATE,
-   intitule VARCHAR2(1000),
-   nomMachine VARCHAR2(100) NOT NULL,
-   idLieu NUMBER NOT NULL,
+   intitule TEXT,
+   nomMachine VARCHAR(100) NOT NULL,
+   idLieu INT NOT NULL,
    PRIMARY KEY(idReunion),
    FOREIGN KEY(nomMachine) REFERENCES MACHINE(nomMachine),
    FOREIGN KEY(idLieu) REFERENCES LIEU(idLieu)
 );
 
 CREATE TABLE participe(
-   codeTenrac NUMBER,
-   idReunion NUMBER,
+   codeTenrac INT,
+   idReunion INT,
    PRIMARY KEY(codeTenrac, idReunion),
    FOREIGN KEY(codeTenrac) REFERENCES TENRAC(codeTenrac),
    FOREIGN KEY(idReunion) REFERENCES REUNION(idReunion)
 );
 
 CREATE TABLE est_composee(
-   idReunion NUMBER,
-   idPlat NUMBER,
+   idReunion INT,
+   idPlat INT,
    PRIMARY KEY(idReunion, idPlat),
    FOREIGN KEY(idReunion) REFERENCES REUNION(idReunion),
    FOREIGN KEY(idPlat) REFERENCES PLAT(idPlat)
 );
 
 CREATE TABLE constitue(
-   idPlat NUMBER,
-   nomA VARCHAR2(100),
+   idPlat INT,
+   nomA VARCHAR(100),
    PRIMARY KEY(idPlat, nomA),
    FOREIGN KEY(idPlat) REFERENCES PLAT(idPlat),
    FOREIGN KEY(nomA) REFERENCES ALIMENT(nomA)
 );
 
 CREATE TABLE constitue2(
-   idPlat NUMBER,
-   nomSauce VARCHAR2(100),
+   idPlat INT,
+   nomSauce VARCHAR(100),
    PRIMARY KEY(idPlat, nomSauce),
    FOREIGN KEY(idPlat) REFERENCES PLAT(idPlat),
    FOREIGN KEY(nomSauce) REFERENCES SAUCE(nomSauce)
 );
 
 CREATE TABLE compose(
-   nomSauce VARCHAR2(100),
-   nomIngredient VARCHAR2(100),
+   nomSauce VARCHAR(100),
+   nomIngredient VARCHAR(100),
    PRIMARY KEY(nomSauce, nomIngredient),
    FOREIGN KEY(nomSauce) REFERENCES SAUCE(nomSauce),
    FOREIGN KEY(nomIngredient) REFERENCES INGREDIENT(nomIngredient)
