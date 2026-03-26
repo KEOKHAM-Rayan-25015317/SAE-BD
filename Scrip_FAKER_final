@@ -1,0 +1,428 @@
+!pip install faker
+
+import sqlite3
+import csv
+import zipfile
+from faker import Faker
+import random
+
+f = Faker('fr_FR')
+
+con = sqlite3.connect(':memory:')
+cur = con.cursor()
+
+ldd = """
+DROP TABLE IF EXISTS compose;
+DROP TABLE IF EXISTS constitue2;
+DROP TABLE IF EXISTS constitue;
+DROP TABLE IF EXISTS est_composee;
+DROP TABLE IF EXISTS participe;
+DROP TABLE IF EXISTS REUNION;
+DROP TABLE IF EXISTS CLUB;
+DROP TABLE IF EXISTS ENTRETIEN;
+DROP TABLE IF EXISTS MACHINE;
+DROP TABLE IF EXISTS PLAT;
+DROP TABLE IF EXISTS LIEU;
+DROP TABLE IF EXISTS ORDRE;
+DROP TABLE IF EXISTS TENRAC;
+DROP TABLE IF EXISTS INGREDIENT;
+DROP TABLE IF EXISTS MODELE;
+DROP TABLE IF EXISTS SAUCE;
+DROP TABLE IF EXISTS LEGUME;
+DROP TABLE IF EXISTS ALIMENT;
+DROP TABLE IF EXISTS TERRITOIRE;
+DROP TABLE IF EXISTS ORGANISATION;
+DROP TABLE IF EXISTS GRADE_SUIVANT;
+DROP TABLE IF EXISTS GRADE;
+DROP TABLE IF EXISTS DIGNITE;
+DROP TABLE IF EXISTS TITRE;
+DROP TABLE IF EXISTS RANG;
+DROP TABLE IF EXISTS ORGANISME;
+
+CREATE TABLE ORGANISME(
+   siret INT,
+   nomOrganisme VARCHAR(100),
+   raisonSociale TEXT,
+   PRIMARY KEY(siret)
+);
+
+CREATE TABLE RANG(
+   nomRang VARCHAR(50),
+   PRIMARY KEY(nomRang),
+   CONSTRAINT chk_rang CHECK (nomRang IN ('Novice', 'Compagnon'))
+);
+
+CREATE TABLE TITRE(
+   nomTitre VARCHAR(50),
+   PRIMARY KEY(nomTitre),
+   CONSTRAINT chk_titre CHECK (nomTitre IN ('Philanthrope', 'Protecteur', 'Honorable'))
+);
+
+CREATE TABLE DIGNITE(
+   nomDignite VARCHAR(50),
+   PRIMARY KEY(nomDignite),
+   CONSTRAINT chk_dignite CHECK (nomDignite IN ('Maître', 'Grand Chancelier', 'Grand Maître'))
+);
+
+CREATE TABLE GRADE(
+   nomGrade VARCHAR(50),
+   PRIMARY KEY(nomGrade),
+   CONSTRAINT chk_grade CHECK (nomGrade IN ('Affilié', 'Sympathisant', 'Adhérent', 'Chevalier / Dame', 'Grand Chevalier / Haute Dame', 'Commandeur', 'Grand''Croix'))
+);
+
+CREATE TABLE GRADE_SUIVANT(
+   nomGrade VARCHAR(50),
+   nomGradSuiv VARCHAR(50),
+   PRIMARY KEY(nomGrade, nomGradSuiv),
+   UNIQUE(nomGrade),
+   FOREIGN KEY(nomGrade) REFERENCES GRADE(nomGrade)
+);
+
+CREATE TABLE ORGANISATION(
+   numOrganisation INT,
+   nomOrganisation VARCHAR(100),
+   PRIMARY KEY(numOrganisation)
+);
+
+CREATE TABLE TERRITOIRE(
+   idTerritoire INT,
+   nomTerritoire VARCHAR(100),
+   PRIMARY KEY(idTerritoire)
+);
+
+CREATE TABLE ALIMENT(
+   nomA VARCHAR(100),
+   PRIMARY KEY(nomA)
+);
+
+CREATE TABLE LEGUME(
+   nomLegume VARCHAR(100),
+   PRIMARY KEY(nomLegume)
+);
+
+CREATE TABLE SAUCE(
+   nomSauce VARCHAR(100),
+   PRIMARY KEY(nomSauce)
+);
+
+CREATE TABLE MODELE(
+   nomModele VARCHAR(100),
+   typeEntretien VARCHAR(100),
+   periodiciteEntretien TEXT,
+   PRIMARY KEY(nomModele)
+);
+
+CREATE TABLE INGREDIENT(
+   nomIngredient VARCHAR(100),
+   PRIMARY KEY(nomIngredient)
+);
+
+CREATE TABLE TENRAC(
+   codeTenrac INT,
+   nomTenrac VARCHAR(100),
+   courrielT VARCHAR(150),
+   telT VARCHAR(20),
+   adresseT VARCHAR(255),
+   numOrganisation INT NOT NULL,
+   nomGrade VARCHAR(50) NOT NULL,
+   nomRang VARCHAR(50),
+   nomTitre VARCHAR(50),
+   nomDignite VARCHAR(50),
+   siret INT NOT NULL,
+   PRIMARY KEY(codeTenrac),
+   FOREIGN KEY(numOrganisation) REFERENCES ORGANISATION(numOrganisation),
+   FOREIGN KEY(nomGrade) REFERENCES GRADE(nomGrade),
+   FOREIGN KEY(nomRang) REFERENCES RANG(nomRang),
+   FOREIGN KEY(nomTitre) REFERENCES TITRE(nomTitre),
+   FOREIGN KEY(nomDignite) REFERENCES DIGNITE(nomDignite),
+   FOREIGN KEY(siret) REFERENCES ORGANISME(siret)
+);
+
+CREATE TABLE ORDRE(
+   numOrganisation INT,
+   idTerritoire INT NOT NULL,
+   PRIMARY KEY(numOrganisation),
+   UNIQUE(idTerritoire),
+   FOREIGN KEY(numOrganisation) REFERENCES ORGANISATION(numOrganisation),
+   FOREIGN KEY(idTerritoire) REFERENCES TERRITOIRE(idTerritoire)
+);
+
+CREATE TABLE LIEU(
+   idLieu INT,
+   adresseLieu VARCHAR(255),
+   numOrganisation INT NOT NULL,
+   PRIMARY KEY(idLieu),
+   FOREIGN KEY(numOrganisation) REFERENCES ORDRE(numOrganisation)
+);
+
+CREATE TABLE PLAT(
+   idPlat INT,
+   nomLegume VARCHAR(100),
+   PRIMARY KEY(idPlat),
+   FOREIGN KEY(nomLegume) REFERENCES LEGUME(nomLegume)
+);
+
+CREATE TABLE MACHINE(
+   nomMachine VARCHAR(100),
+   nomModele VARCHAR(100) NOT NULL,
+   PRIMARY KEY(nomMachine),
+   FOREIGN KEY(nomModele) REFERENCES MODELE(nomModele)
+);
+
+CREATE TABLE ENTRETIEN(
+   idEntretien INT,
+   date_ DATE,
+   nomMachine VARCHAR(100) NOT NULL,
+   numOrganisation INT NOT NULL,
+   codeTenrac INT NOT NULL,
+   PRIMARY KEY(idEntretien),
+   FOREIGN KEY(nomMachine) REFERENCES MACHINE(nomMachine),
+   FOREIGN KEY(numOrganisation) REFERENCES ORGANISATION(numOrganisation),
+   FOREIGN KEY(codeTenrac) REFERENCES TENRAC(codeTenrac)
+);
+
+CREATE TABLE CLUB(
+   numOrganisation_1 INT,
+   numOrganisation INT,
+   PRIMARY KEY(numOrganisation_1),
+   FOREIGN KEY(numOrganisation_1) REFERENCES ORGANISATION(numOrganisation),
+   FOREIGN KEY(numOrganisation) REFERENCES ORDRE(numOrganisation)
+);
+
+CREATE TABLE REUNION(
+   idReunion INT,
+   dateReunion DATE,
+   intitule TEXT,
+   nomMachine VARCHAR(100) NOT NULL,
+   idLieu INT NOT NULL,
+   PRIMARY KEY(idReunion),
+   FOREIGN KEY(nomMachine) REFERENCES MACHINE(nomMachine),
+   FOREIGN KEY(idLieu) REFERENCES LIEU(idLieu)
+);
+
+CREATE TABLE participe(
+   codeTenrac INT,
+   idReunion INT,
+   PRIMARY KEY(codeTenrac, idReunion),
+   FOREIGN KEY(codeTenrac) REFERENCES TENRAC(codeTenrac),
+   FOREIGN KEY(idReunion) REFERENCES REUNION(idReunion)
+);
+
+CREATE TABLE est_composee(
+   idReunion INT,
+   idPlat INT,
+   PRIMARY KEY(idReunion, idPlat),
+   FOREIGN KEY(idReunion) REFERENCES REUNION(idReunion),
+   FOREIGN KEY(idPlat) REFERENCES PLAT(idPlat)
+);
+
+CREATE TABLE constitue(
+   idPlat INT,
+   nomA VARCHAR(100),
+   PRIMARY KEY(idPlat, nomA),
+   FOREIGN KEY(idPlat) REFERENCES PLAT(idPlat),
+   FOREIGN KEY(nomA) REFERENCES ALIMENT(nomA)
+);
+
+CREATE TABLE constitue2(
+   idPlat INT,
+   nomSauce VARCHAR(100),
+   PRIMARY KEY(idPlat, nomSauce),
+   FOREIGN KEY(idPlat) REFERENCES PLAT(idPlat),
+   FOREIGN KEY(nomSauce) REFERENCES SAUCE(nomSauce)
+);
+
+CREATE TABLE compose(
+   nomSauce VARCHAR(100),
+   nomIngredient VARCHAR(100),
+   PRIMARY KEY(nomSauce, nomIngredient),
+   FOREIGN KEY(nomSauce) REFERENCES SAUCE(nomSauce),
+   FOREIGN KEY(nomIngredient) REFERENCES INGREDIENT(nomIngredient)
+);
+"""
+cur.executescript(ldd)
+
+grades = ['Affilié', 'Sympathisant', 'Adhérent', 'Chevalier / Dame', 'Grand Chevalier / Haute Dame', 'Commandeur', "Grand'Croix"]
+poids_grades = [45, 25, 15, 8, 4, 2, 1]
+
+grade_suiv = [('Affilié', 'Sympathisant'), ('Sympathisant', 'Adhérent'), ('Adhérent', 'Chevalier / Dame'), ('Chevalier / Dame', 'Grand Chevalier / Haute Dame'), ('Grand Chevalier / Haute Dame', 'Commandeur'), ('Commandeur', "Grand'Croix")]
+
+rangs = ['Novice', 'Compagnon', None]
+poids_rangs = [15, 5, 80]
+
+titres = ['Philanthrope', 'Protecteur', 'Honorable', None]
+poids_titres = [4, 4, 2, 90]
+
+dignites = ['Maître', 'Grand Chancelier', 'Grand Maître', None]
+poids_dignites = [2, 1, 1, 96]
+
+cur.executemany("INSERT INTO GRADE VALUES (?)", [(g,) for g in grades])
+cur.executemany("INSERT INTO GRADE_SUIVANT VALUES (?, ?)", grade_suiv)
+cur.executemany("INSERT INTO RANG VALUES (?)", [(r,) for r in rangs if r is not None])
+cur.executemany("INSERT INTO TITRE VALUES (?)", [(t,) for t in titres if t is not None])
+cur.executemany("INSERT INTO DIGNITE VALUES (?)", [(d,) for d in dignites if d is not None])
+
+sirets = [10000000000000 + i for i in range(1, 21)]
+for s in sirets:
+   cur.execute("INSERT INTO ORGANISME VALUES (?, ?, ?)", (s, f.company(), f.catch_phrase()))
+
+regions = ['Île-de-France', 'Auvergne-Rhône-Alpes', 'Nouvelle-Aquitaine', 'Occitanie', 'Hauts-de-France', 'Grand Est', 'Bretagne', 'Pays de la Loire', 'Normandie', 'Bourgogne-Franche-Comté', 'Centre-Val de Loire', 'Corse', 'Provence-Alpes-Côte d''Azur']
+for i, reg in enumerate(regions, 1):
+   cur.execute("INSERT INTO TERRITOIRE VALUES (?, ?)", (i, reg))
+
+for i in range(1, 14):
+   cur.execute("INSERT INTO ORGANISATION VALUES (?, ?)", (i, f"Ordre_de_{regions[i-1].replace(' ', '_')}"))
+   cur.execute("INSERT INTO ORDRE VALUES (?, ?)", (i, i))
+
+for i in range(14, 101):
+   cur.execute("INSERT INTO ORGANISATION VALUES (?, ?)", (i, f"Club_Raclette_{i}"))
+   ordre_parent = random.randint(1, 13)
+   cur.execute("INSERT INTO CLUB VALUES (?, ?)", (i, ordre_parent))
+
+aliments = ['Tenders de poulet frits', 'Tenders de poulet non-frits', 'Fromage à raclette', 'Viande à kebab', 'Pizza', 'Quiche', 'Saumon', 'Ananas', 'Beurre']
+legumes = ['Brocoli', 'Carotte', 'Courgette', 'Choux de Bruxelles', 'Tomate']
+sauces = ['Mayonnaise', 'Sauce blanche', 'Moutarde', 'Ketchup', 'Sauce Samouraï']
+ingredients = ['Huile', 'Oeuf', 'Moutarde douce', 'Vinaigre', 'Tomate concentrée', 'Crème fraîche', 'Ail', 'Ciboulette']
+
+cur.executemany("INSERT INTO ALIMENT VALUES (?)", [(a,) for a in aliments])
+cur.executemany("INSERT INTO LEGUME VALUES (?)", [(l,) for l in legumes])
+cur.executemany("INSERT INTO SAUCE VALUES (?)", [(s,) for s in sauces])
+cur.executemany("INSERT INTO INGREDIENT VALUES (?)", [(i,) for i in ingredients])
+
+compositions_sauces = [
+    ('Mayonnaise', 'Huile'), ('Mayonnaise', 'Oeuf'), ('Mayonnaise', 'Moutarde douce'),
+    ('Sauce blanche', 'Crème fraîche'), ('Sauce blanche', 'Ciboulette'), ('Sauce blanche', 'Ail'),
+    ('Ketchup', 'Tomate concentrée'), ('Ketchup', 'Vinaigre'),
+    ('Moutarde', 'Moutarde douce'), ('Moutarde', 'Vinaigre'),
+    ('Sauce Samouraï', 'Huile'), ('Sauce Samouraï', 'Oeuf'), ('Sauce Samouraï', 'Tomate concentrée')
+]
+cur.executemany("INSERT INTO compose VALUES (?, ?)", compositions_sauces)
+
+modeles = [
+    ('Lampe à raclette traditionnelle', 'Manuel', 'Annuelle'),
+    ('Combiné raclette-pierrade-fondue', 'Complet', 'Semestrielle'),
+    ('Appareil bon marché', 'Basique', 'Mensuelle')
+]
+cur.executemany("INSERT INTO MODELE VALUES (?, ?, ?)", modeles)
+
+machines = [(f"Machine_{i}", random.choice(modeles)[0]) for i in range(1, 51)]
+cur.executemany("INSERT INTO MACHINE VALUES (?, ?)", machines)
+
+lieux = [(i, f.address().replace('\n', ' '), random.randint(1, 13)) for i in range(1, 41)]
+cur.executemany("INSERT INTO LIEU VALUES (?, ?, ?)", lieux)
+
+
+plats, constitue, constitue2 = [], [], []
+for i in range(1, 201):
+    legume_associe = random.choice(legumes) if random.random() < 0.1 else None
+    plats.append((i, legume_associe))
+    
+  
+    alims_choisis = random.sample([a for a in aliments if a != 'Fromage à raclette'], random.randint(1, 3))
+    alims_choisis.append('Fromage à raclette')
+    for a in alims_choisis:
+        constitue.append((i, a))
+        
+
+    for s in random.sample(sauces, random.randint(0, 2)):
+        constitue2.append((i, s))
+
+cur.executemany("INSERT INTO PLAT VALUES (?, ?)", plats)
+cur.executemany("INSERT INTO constitue VALUES (?, ?)", constitue)
+cur.executemany("INSERT INTO constitue2 VALUES (?, ?)", constitue2)
+
+org_ids = list(range(1, 101))
+poids_orgs = [random.randint(10, 1000) for _ in org_ids]
+
+liste_tenracs = []
+chevalier_ou_plus_ids = []
+maitre_ou_plus_ids = []
+
+grades_hauts = ['Chevalier / Dame', 'Grand Chevalier / Haute Dame', 'Commandeur', "Grand'Croix"]
+dignites_hautes = ['Maître', 'Grand Chancelier', 'Grand Maître']
+
+for i in range(1, 300001):
+   rang_choisi = random.choices(rangs, weights=poids_rangs, k=1)[0]
+   titre_choisi = random.choices(titres, weights=poids_titres, k=1)[0]
+   dignite_choisie = random.choices(dignites, weights=poids_dignites, k=1)[0]
+   grade_choisi = random.choices(grades, weights=poids_grades, k=1)[0]
+   org_choisie = random.choices(org_ids, weights=poids_orgs, k=1)[0]
+   
+   if grade_choisi in grades_hauts:
+       chevalier_ou_plus_ids.append(i)
+   if dignite_choisie in dignites_hautes:
+       maitre_ou_plus_ids.append(i)
+
+   liste_tenracs.append((
+       i, f.name(), f.email(), "0600000000", f.address().replace('\n', ' '),
+       org_choisie, grade_choisi, rang_choisi, titre_choisi, dignite_choisie, random.choice(sirets)
+   ))
+
+   if i % 50000 == 0:
+       cur.executemany("INSERT INTO TENRAC VALUES (?,?,?,?,?,?,?,?,?,?,?)", liste_tenracs)
+       liste_tenracs = []
+
+reunions, participations, est_composee = [], [], []
+for i in range(1, 1001):
+    reunions.append((i, f.date_between(start_date='-2y', end_date='today'), f"Dégustation {f.word()}", random.choice(machines)[0], random.choice(lieux)[0]))
+    
+    for p in random.sample(range(1, 201), random.randint(1, 4)):
+        est_composee.append((i, p))
+        
+  
+    nb_participants = random.randint(5, 25)
+    participants = set()
+    if chevalier_ou_plus_ids:
+        participants.add(random.choice(chevalier_ou_plus_ids))
+        
+    while len(participants) < nb_participants:
+        participants.add(random.randint(1, 300000))
+        
+    for p in participants:
+        participations.append((p, i))
+
+cur.executemany("INSERT INTO REUNION VALUES (?, ?, ?, ?, ?)", reunions)
+cur.executemany("INSERT INTO est_composee VALUES (?, ?)", est_composee)
+cur.executemany("INSERT INTO participe VALUES (?, ?)", participations)
+
+entretiens = []
+for i in range(1, 501):
+    entretiens.append((i, f.date_between(start_date='-3y', end_date='today'), random.choice(machines)[0], random.randint(1, 100), random.choice(maitre_ou_plus_ids)))
+
+cur.executemany("INSERT INTO ENTRETIEN VALUES (?, ?, ?, ?, ?)", entretiens)
+
+
+with open('SAE_Base_Tenrac.sql', 'w', encoding='utf-8') as f_sql:
+   f_sql.write("BEGIN TRANSACTION;\n")
+   f_sql.write(ldd + "\n")
+   for line in con.iterdump():
+       if line.startswith('INSERT INTO'):
+           f_sql.write('%s\n' % line)
+   f_sql.write("COMMIT;\n")
+
+with zipfile.ZipFile('SAE_SQL_Complet.zip', 'w', zipfile.ZIP_DEFLATED) as zipf:
+   zipf.write('SAE_Base_Tenrac.sql')
+
+cur.execute("SELECT name FROM sqlite_master WHERE type='table';")
+tables = cur.fetchall()
+
+fichiers_csv_crees = []
+for table_name in tables:
+   nom_table = table_name[0]
+   if nom_table.startswith('sqlite_'): continue
+   
+   cur.execute(f"SELECT * FROM {nom_table}")
+   nom_fichier_csv = f"{nom_table}.csv"
+   with open(nom_fichier_csv, 'w', newline='', encoding='utf-8') as f_csv:
+       writer = csv.writer(f_csv)
+       if cur.description:
+           writer.writerow([desc[0] for desc in cur.description])
+           writer.writerows(cur)
+   fichiers_csv_crees.append(nom_fichier_csv)
+
+with zipfile.ZipFile('SAE_CSV_Complet.zip', 'w', zipfile.ZIP_DEFLATED) as zipf:
+   for fichier in fichiers_csv_crees:
+       zipf.write(fichier)
+
+con.close()
+print("Génération terminée ! Fichiers ZIP créés.")
